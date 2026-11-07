@@ -87,6 +87,31 @@ class ProviderTests(unittest.TestCase):
         run_tool("yt-dlp", ["--version"])
         self.assertEqual(run.call_args.args[0], [sys.executable, "-m", "yt_dlp", "--version"])
 
+    @patch("playlist_provider.subprocess.run")
+    @patch("playlist_provider.importlib.util.find_spec")
+    @patch("playlist_provider.shutil.which", return_value=None)
+    @patch("playlist_provider.sys.frozen", True, create=True)
+    def test_frozen_provider_dispatch(self, which, find_spec, run):
+        run.return_value = subprocess.CompletedProcess([], 0, stdout="version")
+        self.assertEqual(run_tool("yt-dlp", ["--version"]), "version")
+        self.assertEqual(run.call_args.args[0], [sys.executable, "--_playlistcompare_provider", "yt-dlp", "--version"])
+        find_spec.assert_not_called()
+
+    def test_provider_tool_dispatch(self):
+        from playlistcompare import run_provider_tool
+
+        entry_point = unittest.mock.Mock()
+        entry_point.name = "yt-dlp"
+        entry_point.group = "console_scripts"
+        entry_point.load.return_value.return_value = 0
+        with patch("playlistcompare.distribution") as get_distribution, patch("playlistcompare.sys.argv", ["app", "unchanged"]):
+            get_distribution.return_value.entry_points = [entry_point]
+            with self.assertRaises(SystemExit) as result:
+                run_provider_tool(["--_playlistcompare_provider", "yt-dlp", "--version"])
+            self.assertEqual(sys.argv, ["yt-dlp", "--version"])
+        self.assertEqual(result.exception.code, 0)
+        get_distribution.assert_called_once_with("yt-dlp")
+
     def test_unified_cache_and_force_reload_for_both_providers(self):
         for provider, url in (("youtube", "https://youtube.com/playlist?list=abc"),
                               ("spotify", "https://open.spotify.com/playlist/abc")):

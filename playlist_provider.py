@@ -26,6 +26,8 @@ def run_tool(tool, arguments):
     module = tool.replace("-", "_")
     if executable:
         command = [executable]
+    elif getattr(sys, "frozen", False):
+        command = [sys.executable, "--_playlistcompare_provider", tool]
     elif importlib.util.find_spec(module):
         command = [sys.executable, "-m", module]
     else:

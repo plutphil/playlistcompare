@@ -31,6 +31,15 @@ as Python modules if their executables are not on `PATH`. Paths with spaces
 and Unicode filenames are supported; provider output uses UTF-8, and provider
 processes do not open extra console windows on Windows.
 
+## Packaged Builds
+
+The GitHub Actions **Build packages** workflow builds a standalone Windows
+`PlaylistCompare.exe` and an x86_64 Linux AppImage. Run it from the Actions tab
+or push a version tag such as `v1.0.0`; download each platform artifact from
+the completed workflow run. The Windows executable is built on Windows because
+PyInstaller does not cross-compile between operating systems. Linux builds
+require a compatible system GUI runtime (including Tk dependencies).
+
 ## Compare
 
 Paste a Spotify or YouTube playlist URL, choose an audio folder, and load.

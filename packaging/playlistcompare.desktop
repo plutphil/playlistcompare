@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Playlist Compare
+Comment=Compare streaming playlists with local audio files
+Exec=PlaylistCompare
+Icon=playlistcompare
+Terminal=false
+Type=Application
+Categories=AudioVideo;Audio;

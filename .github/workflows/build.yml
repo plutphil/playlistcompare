@@ -1,0 +1,60 @@
+name: Build packages
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install -r requirements.txt pyinstaller
+      - run: >-
+          pyinstaller --noconfirm --clean --onefile --windowed
+          --name PlaylistCompare --collect-all spotdl --collect-all yt_dlp
+          --collect-all pykakasi
+          --copy-metadata spotdl --copy-metadata yt-dlp playlistcompare.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: PlaylistCompare-windows-x64
+          path: dist/PlaylistCompare.exe
+          if-no-files-found: error
+
+  linux:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install -r requirements.txt pyinstaller
+      - run: >-
+          pyinstaller --noconfirm --clean --onefile
+          --name PlaylistCompare --collect-all spotdl --collect-all yt_dlp
+          --collect-all pykakasi
+          --copy-metadata spotdl --copy-metadata yt-dlp playlistcompare.py
+      - name: Assemble AppImage
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y librsvg2-bin
+          mkdir -p AppDir/usr/bin AppDir/usr/share/icons/hicolor/256x256/apps
+          cp dist/PlaylistCompare AppDir/usr/bin/
+          cp packaging/AppRun AppDir/AppRun
+          cp packaging/playlistcompare.desktop AppDir/playlistcompare.desktop
+          rsvg-convert -w 256 -h 256 packaging/playlistcompare.svg -o AppDir/usr/share/icons/hicolor/256x256/apps/playlistcompare.png
+          cp AppDir/usr/share/icons/hicolor/256x256/apps/playlistcompare.png AppDir/playlistcompare.png
+          chmod +x AppDir/AppRun
+          wget -q https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage -O appimagetool
+          chmod +x appimagetool
+          ARCH=x86_64 APPIMAGE_EXTRACT_AND_RUN=1 ./appimagetool AppDir PlaylistCompare-x86_64.AppImage
+      - uses: actions/upload-artifact@v4
+        with:
+          name: PlaylistCompare-linux-x86_64.AppImage
+          path: PlaylistCompare-x86_64.AppImage
+          if-no-files-found: error
