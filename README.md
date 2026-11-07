@@ -34,9 +34,17 @@ processes do not open extra console windows on Windows.
 ## Packaged Builds
 
 The GitHub Actions **Build packages** workflow builds a standalone Windows
-`PlaylistCompare.exe` and an x86_64 Linux AppImage. Run it from the Actions tab
-or push a version tag such as `v1.0.0`; download each platform artifact from
-the completed workflow run. The Windows executable is built on Windows because
+`PlaylistCompare.exe` and an x86_64 Linux AppImage. To publish a GitHub Release,
+push a version tag such as `v1.0.0`:
+
+```sh
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+After both builds pass, the workflow creates the release and attaches both
+files. To build without publishing, run the workflow from the Actions tab and
+download its artifacts. The Windows executable is built on Windows because
 PyInstaller does not cross-compile between operating systems. Linux builds
 require a compatible system GUI runtime (including Tk dependencies).
 
