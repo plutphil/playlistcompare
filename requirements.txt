@@ -1,0 +1,2 @@
+spotdl>=4
+yt-dlp
